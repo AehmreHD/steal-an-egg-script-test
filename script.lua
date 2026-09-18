@@ -17,6 +17,7 @@ local TargetWalkSpeed = 16
 
 local Pos1Part = nil
 local Teleporting = false
+local WalkSpeedChangedConnection = nil
 
 local function GetCharacter()
 	return player.Character
@@ -68,6 +69,23 @@ local function UpdateSpeedLabel()
 	speedLabel.Text = "speed: " .. tostring(math.floor(TargetWalkSpeed))
 end
 
+local function BindWalkSpeed(humanoid)
+	if WalkSpeedChangedConnection then
+		WalkSpeedChangedConnection:Disconnect()
+		WalkSpeedChangedConnection = nil
+	end
+
+	if not humanoid then
+		return
+	end
+
+	WalkSpeedChangedConnection = humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+		if humanoid.WalkSpeed ~= TargetWalkSpeed then
+			humanoid.WalkSpeed = TargetWalkSpeed
+		end
+	end)
+end
+
 local function ChangeWalkSpeed(amount)
 	TargetWalkSpeed = math.max(0, TargetWalkSpeed + amount)
 
@@ -87,7 +105,9 @@ local function StartF()
 		return
 	end
 
+	GHeld = false
 	FHeld = true
+
 	ChangeWalkSpeed(1)
 
 	task.spawn(function()
@@ -105,7 +125,9 @@ local function StartG()
 		return
 	end
 
+	FHeld = false
 	GHeld = true
+
 	ChangeWalkSpeed(-1)
 
 	task.spawn(function()
@@ -127,6 +149,7 @@ local function CreatePos1()
 
 	if Pos1Part then
 		Pos1Part:Destroy()
+		Pos1Part = nil
 	end
 
 	local part = Instance.new("Part")
@@ -162,6 +185,15 @@ local function CreatePos1()
 	print("Pos1 created:", part.Position)
 end
 
+local function DeletePos1()
+	if Pos1Part then
+		Pos1Part:Destroy()
+		Pos1Part = nil
+
+		print("Pos1 deleted")
+	end
+end
+
 local function TeleportToPos1()
 	if Teleporting then
 		return
@@ -172,46 +204,43 @@ local function TeleportToPos1()
 		return
 	end
 
+	local character = GetCharacter()
 	local root = GetRootPart()
 
-	if not root then
+	if not character or not root then
 		return
 	end
 
-	Teleporting = true
-
+	local targetCFrame = Pos1Part.CFrame
 	local oldPos = root.CFrame
+
+	Teleporting = true
 
 	print("Old position saved:", oldPos.Position)
 
-	root.CFrame = Pos1Part.CFrame
+	root.CFrame = targetCFrame
 
 	print("Teleported to Pos1")
 
 	task.wait(1)
 
-	root = GetRootPart()
+	if player.Character == character then
+		root = GetRootPart()
 
-	if root then
-		root.CFrame = oldPos
-		print("Returned to old position:", oldPos.Position)
+		if root then
+			root.CFrame = oldPos
+			print("Returned to old position:", oldPos.Position)
+		end
 	end
 
 	Teleporting = false
-end
-
-local function DeletePos1()
-	if Pos1Part then
-		Pos1Part:Destroy()
-		Pos1Part = nil
-		print("Pos1 deleted")
-	end
 end
 
 local humanoid = GetHumanoid()
 
 if humanoid then
 	TargetWalkSpeed = humanoid.WalkSpeed
+	BindWalkSpeed(humanoid)
 end
 
 UpdateSpeedLabel()
@@ -229,18 +258,17 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 		return
 	end
 
-  if input.KeyCode == Enum.KeyCode.F then
-  	StartF()
-  elseif input.KeyCode == Enum.KeyCode.G then
-  	StartG()
-  elseif input.KeyCode == Enum.KeyCode.Z then
-  	CreatePos1()
-  elseif input.KeyCode == Enum.KeyCode.J then
-  	task.spawn(TeleportToPos1)
-  elseif input.KeyCode == Enum.KeyCode.V then
-  	DeletePos1()
-  end
-    
+	if input.KeyCode == Enum.KeyCode.F then
+		StartF()
+	elseif input.KeyCode == Enum.KeyCode.G then
+		StartG()
+	elseif input.KeyCode == Enum.KeyCode.Z then
+		CreatePos1()
+	elseif input.KeyCode == Enum.KeyCode.J then
+		task.spawn(TeleportToPos1)
+	elseif input.KeyCode == Enum.KeyCode.V then
+		DeletePos1()
+	end
 end)
 
 UserInputService.InputEnded:Connect(function(input)
@@ -256,5 +284,6 @@ player.CharacterAdded:Connect(function(character)
 
 	newHumanoid.WalkSpeed = TargetWalkSpeed
 
+	BindWalkSpeed(newHumanoid)
 	UpdateSpeedLabel()
 end)
