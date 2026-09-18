@@ -65,11 +65,11 @@ corner.CornerRadius = UDim.new(0, 6)
 corner.Parent = speedLabel
 
 local function UpdateSpeedLabel()
-	speedLabel.Text = "speed: " .. math.floor(tostring(TargetWalkSpeed))
+	speedLabel.Text = "speed: " .. tostring(math.floor(TargetWalkSpeed))
 end
 
 local function ChangeWalkSpeed(amount)
-	TargetWalkSpeed = math.floor(math.max(0, TargetWalkSpeed + amount))
+	TargetWalkSpeed = math.max(0, TargetWalkSpeed + amount)
 
 	local humanoid = GetHumanoid()
 
