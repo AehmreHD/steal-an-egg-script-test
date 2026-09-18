@@ -11,7 +11,7 @@ local FHeld = false
 local GHeld = false
 
 local HoldDelay = 1
-local RapidDelay = 0.03
+local RapidDelay = 0.05
 
 local TargetWalkSpeed = 16
 
@@ -69,7 +69,7 @@ local function UpdateSpeedLabel()
 end
 
 local function ChangeWalkSpeed(amount)
-	TargetWalkSpeed = math.max(0, TargetWalkSpeed + amount)
+	TargetWalkSpeed = math.floor(math.max(0, TargetWalkSpeed + amount))
 
 	local humanoid = GetHumanoid()
 
