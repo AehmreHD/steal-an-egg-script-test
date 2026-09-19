@@ -11,7 +11,7 @@ local FHeld = false
 local GHeld = false
 
 local HoldDelay = 1
-local RapidDelay = 0.05
+local RapidDelay = 0.02
 
 local TargetWalkSpeed = 16
 
