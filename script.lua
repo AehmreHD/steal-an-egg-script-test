@@ -43,32 +43,6 @@ local function GetRootPart()
 	return character:FindFirstChild("HumanoidRootPart")
 end
 
-local gui = Instance.new("ScreenGui")
-gui.Name = "WalkSpeedGui"
-gui.ResetOnSpawn = false
-gui.Parent = player:WaitForChild("PlayerGui")
-
-local speedLabel = Instance.new("TextLabel")
-speedLabel.Name = "SpeedLabel"
-speedLabel.Size = UDim2.fromOffset(180, 35)
-speedLabel.Position = UDim2.new(0.5, -90, 0, 15)
-speedLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-speedLabel.BackgroundTransparency = 0.25
-speedLabel.BorderSizePixel = 0
-speedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-speedLabel.TextSize = 18
-speedLabel.Font = Enum.Font.GothamBold
-speedLabel.Text = "speed: 16"
-speedLabel.Parent = gui
-
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 6)
-corner.Parent = speedLabel
-
-local function UpdateSpeedLabel()
-	speedLabel.Text = "speed: " .. tostring(math.floor(TargetWalkSpeed))
-end
-
 local function BindWalkSpeed(humanoid)
 	if WalkSpeedChangedConnection then
 		WalkSpeedChangedConnection:Disconnect()
@@ -95,9 +69,7 @@ local function ChangeWalkSpeed(amount)
 		humanoid.WalkSpeed = TargetWalkSpeed
 	end
 
-	UpdateSpeedLabel()
-
-	print("WalkSpeed:", TargetWalkSpeed)
+	print("Speed:", math.floor(TargetWalkSpeed))
 end
 
 local function StartF()
@@ -243,7 +215,7 @@ if humanoid then
 	BindWalkSpeed(humanoid)
 end
 
-UpdateSpeedLabel()
+print("Speed:", math.floor(TargetWalkSpeed))
 
 RunService.RenderStepped:Connect(function()
 	local currentHumanoid = GetHumanoid()
@@ -285,5 +257,6 @@ player.CharacterAdded:Connect(function(character)
 	newHumanoid.WalkSpeed = TargetWalkSpeed
 
 	BindWalkSpeed(newHumanoid)
-	UpdateSpeedLabel()
+
+	print("Speed:", math.floor(TargetWalkSpeed))
 end)
