@@ -19,6 +19,85 @@ local Pos1Part = nil
 local Teleporting = false
 local WalkSpeedChangedConnection = nil
 
+local PlayerGui = player:WaitForChild("PlayerGui")
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "WalkSpeedPos1Gui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = false
+ScreenGui.Parent = PlayerGui
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.fromOffset(210, 55)
+MainFrame.Position = UDim2.new(0.5, -105, 0.1, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Parent = ScreenGui
+
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0, 8)
+Corner.Parent = MainFrame
+
+local Stroke = Instance.new("UIStroke")
+Stroke.Thickness = 1
+Stroke.Color = Color3.fromRGB(255, 255, 255)
+Stroke.Transparency = 0.35
+Stroke.Parent = MainFrame
+
+local SpeedLabel = Instance.new("TextLabel")
+SpeedLabel.Name = "SpeedLabel"
+SpeedLabel.Size = UDim2.fromScale(1, 1)
+SpeedLabel.BackgroundTransparency = 1
+SpeedLabel.Text = "WalkSpeed: " .. math.floor(TargetWalkSpeed)
+SpeedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedLabel.TextSize = 18
+SpeedLabel.Font = Enum.Font.GothamBold
+SpeedLabel.Parent = MainFrame
+
+local Dragging = false
+local DragStart = nil
+local StartPosition = nil
+local DragInput = nil
+
+local function UpdateSpeedLabel()
+	SpeedLabel.Text = "WalkSpeed: " .. math.floor(TargetWalkSpeed)
+end
+
+MainFrame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		Dragging = true
+		DragStart = input.Position
+		StartPosition = MainFrame.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				Dragging = false
+			end
+		end)
+	end
+end)
+
+MainFrame.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		DragInput = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == DragInput and Dragging then
+		local delta = input.Position - DragStart
+
+		MainFrame.Position = UDim2.new(
+			StartPosition.X.Scale,
+			StartPosition.X.Offset + delta.X,
+			StartPosition.Y.Scale,
+			StartPosition.Y.Offset + delta.Y
+		)
+	end
+end)
+
 local function GetCharacter()
 	return player.Character
 end
@@ -68,6 +147,8 @@ local function ChangeWalkSpeed(amount)
 	if humanoid then
 		humanoid.WalkSpeed = TargetWalkSpeed
 	end
+
+	UpdateSpeedLabel()
 
 	print("Speed:", math.floor(TargetWalkSpeed))
 end
@@ -215,6 +296,8 @@ if humanoid then
 	BindWalkSpeed(humanoid)
 end
 
+UpdateSpeedLabel()
+
 print("Speed:", math.floor(TargetWalkSpeed))
 
 RunService.RenderStepped:Connect(function()
@@ -257,6 +340,7 @@ player.CharacterAdded:Connect(function(character)
 	newHumanoid.WalkSpeed = TargetWalkSpeed
 
 	BindWalkSpeed(newHumanoid)
+	UpdateSpeedLabel()
 
 	print("Speed:", math.floor(TargetWalkSpeed))
 end)
